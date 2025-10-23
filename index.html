@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Фото для печати</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    video,
+    canvas,
+    img {
+      width: 90%;
+      max-width: 400px;
+      margin: 10px auto;
+      border: 1px solid #ccc;
+    }
+
+    button,
+    input[type=file] {
+      margin: 5px;
+      padding: 10px 15px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>📸 Сделай фото или выбери из галереи</h2>
+
+  <video id="video" autoplay playsinline></video><br>
+  <button id="snap">Сделать фото</button>
+  <input type="file" accept="image/*" id="upload">
+
+  <canvas id="canvas" hidden></canvas>
+  <h3>Чёрно-белое превью:</h3>
+  <img id="preview" alt="предпросмотр" /><br>
+  <button id="print">🖨️ Печать</button>
+  <input type="number" value="50" min="0" max="100" step="5" id="brightness">
+  <input type="number" value="50" min="5" max="100" step="5" id="contrast">
+
+  <script>
+    // --- Инициализация камеры ---
+    const video = document.getElementById('video');
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+      video.srcObject = stream;
+    });
+
+    // --- Съёмка фото ---
+    const canvas = document.getElementById('canvas');
+    const preview = document.getElementById('preview');
+    document.getElementById('snap').onclick = () => {
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      processImage();
+    };
+
+    // --- Загрузка из галереи ---
+    document.getElementById('upload').onchange = e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const img = new Image();
+      img.onload = () => {
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        processImage();
+      };
+      img.src = URL.createObjectURL(file);
+    };
+
+    // --- Обработка в ч/б ---
+    function processImage() {
+      const brightness = document.getElementById('brightness').value;
+      const contrast = document.getElementById('contrast').value;
+
+      const ctx = canvas.getContext("2d");
+      const { width: w, height: h } = canvas;
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const d = imgData.data;
+
+      // Проходим по всем пикселям построчно
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const i = (y * w + x) * 4;
+
+          // вычисляем яркость (0–255)
+
+          const oldPixel = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2])
+
+          const factor = (contrast - 50) / 50  // диапазон от -1 до +1
+          contrastFactor = Math.tan((factor + 1) * Math.PI / 4)
+          let gray = (oldPixel - 128) * contrastFactor + 128
+
+          gray = Math.max(0, Math.min(255, gray + (brightness - 50) * 2.55));
+
+          const newPixel = gray < 128 ? 0 : 255; // бинаризация
+          const error = gray - newPixel;
+
+          // применяем новое значение
+          d[i] = d[i + 1] = d[i + 2] = newPixel;
+
+          // распределяем ошибку по соседям (7, 3, 5, 1)
+          // справа
+          if (x + 1 < w) {
+            const idx = (y * w + (x + 1)) * 4;
+            const v = d[idx] + (error * 7) / 16;
+            d[idx] = d[idx + 1] = d[idx + 2] = v;
+          }
+          // вниз-влево
+          if (x > 0 && y + 1 < h) {
+            const idx = ((y + 1) * w + (x - 1)) * 4;
+            const v = d[idx] + (error * 3) / 16;
+            d[idx] = d[idx + 1] = d[idx + 2] = v;
+          }
+          // вниз
+          if (y + 1 < h) {
+            const idx = ((y + 1) * w + x) * 4;
+            const v = d[idx] + (error * 5) / 16;
+            d[idx] = d[idx + 1] = d[idx + 2] = v;
+          }
+          // вниз-вправо
+          if (x + 1 < w && y + 1 < h) {
+            const idx = ((y + 1) * w + (x + 1)) * 4;
+            const v = d[idx] + (error * 1) / 16;
+            d[idx] = d[idx + 1] = d[idx + 2] = v;
+          }
+        }
+      }
+
+      // записываем результат обратно на canvas
+      ctx.putImageData(imgData, 0, 0);
+      preview.src = canvas.toDataURL("image/png");
+    }
+
+    // --- Кнопка "Печать" ---
+    document.getElementById('print').onclick = async () => {
+      const data = canvas.toDataURL('image/png');
+      console.log("Отправка фото на печать...");
+      await sendToPrinter(data);
+      alert("Фото отправлено на печать!");
+    };
+
+    // --- Пример функции отправки ---
+    async function sendToPrinter(imageData) {
+      // Здесь можно подставить реальный запрос к твоему Flask-серверу:
+      // await fetch('http://raspberrypi:8080/print', {
+      //   method: 'POST',
+      //   headers: {'Content-Type':'application/json'},
+      //   body: JSON.stringify({image: imageData})
+      // });
+      console.log("Псевдоотправка", imageData.slice(0, 50) + "...");
+    }
+  </script>
+</body>
+
+</html>

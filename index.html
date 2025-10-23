@@ -16,8 +16,9 @@
     video,
     canvas,
     img {
-      width: 90%;
-      max-width: 400px;
+      width: 600px;
+      height: 600px;
+      /* object-fit: cover; */
       margin: 10px auto;
       border: 1px solid #ccc;
     }
@@ -38,7 +39,8 @@
   <button id="snap">Сделать фото</button>
   <input type="file" accept="image/*" id="upload">
 
-  <canvas id="canvas" hidden></canvas>
+  <canvas id="canvasDraft"></canvas>
+  <canvas id="canvasUpdated"></canvas>
   <h3>Чёрно-белое превью:</h3>
   <img id="preview" alt="предпросмотр" /><br>
   <button id="print">🖨️ Печать</button>
@@ -48,33 +50,78 @@
   <script>
     // --- Инициализация камеры ---
     const video = document.getElementById('video');
-    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+    navigator.mediaDevices.getUserMedia({
+      video: {
+        width: 600,
+        height: 600
+      }
+    }).then(stream => {
       video.srcObject = stream;
     });
 
     // --- Съёмка фото ---
-    const canvas = document.getElementById('canvas');
+    const canvas = document.getElementById('canvasDraft');
+    const canvasUpdated = document.getElementById('canvasUpdated');
     const preview = document.getElementById('preview');
     document.getElementById('snap').onclick = () => {
-      const ctx = canvas.getContext('2d');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0);
+      const ctxDraft = canvas.getContext('2d');
+
+      console.log(video.videoWidth);
+      console.log(video.videoHeight);
+
+      // canvas.width = video.videoWidth;
+      // canvas.height = video.videoHeight;
+      canvas.width = canvasUpdated.width = 600;
+      canvas.height = canvasUpdated.height = 600;
+      ctxDraft.drawImage(video, 0, 0);
       processImage();
     };
+
+    document.getElementById('brightness').onchange = () => {
+      processImage();
+    };
+
+    document.getElementById('contrast').onchange = () => {
+      processImage();
+    };
+
 
     // --- Загрузка из галереи ---
     document.getElementById('upload').onchange = e => {
       const file = e.target.files[0];
       if (!file) return;
+
       const img = new Image();
       img.onload = () => {
-        const ctx = canvas.getContext('2d');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
+        const ctxDraft = canvas.getContext('2d');
+
+        // --- определяем исходные размеры ---
+        const srcW = img.width;
+        const srcH = img.height;
+
+        // --- вычисляем размер квадрата (по меньшей стороне) ---
+        const side = Math.min(srcW, srcH);
+
+        // --- обрезаем из центра ---
+        const sx = (srcW - side) / 2;
+        const sy = (srcH - side) / 2;
+
+        // --- задаём размер итогового canvas ---
+        const targetSize = 600;
+        canvas.width = targetSize;
+        canvas.height = targetSize;
+
+        // --- рисуем обрезанный квадрат, зумим в 600×600 ---
+        ctxDraft.drawImage(
+          img,            // источник
+          sx, sy, side, side, // что взять из оригинала
+          0, 0, targetSize, targetSize // куда нарисовать
+        );
+
+        // --- обрабатываем изображение ---
         processImage();
       };
+
       img.src = URL.createObjectURL(file);
     };
 
@@ -83,9 +130,11 @@
       const brightness = document.getElementById('brightness').value;
       const contrast = document.getElementById('contrast').value;
 
-      const ctx = canvas.getContext("2d");
+      const ctxUpdated = canvasUpdated.getContext("2d");
       const { width: w, height: h } = canvas;
-      const imgData = ctx.getImageData(0, 0, w, h);
+      ctxUpdated.drawImage(canvas, 0, 0);
+
+      const imgData = ctxUpdated.getImageData(0, 0, w, h);
       const d = imgData.data;
 
       // Проходим по всем пикселям построчно
@@ -138,8 +187,8 @@
       }
 
       // записываем результат обратно на canvas
-      ctx.putImageData(imgData, 0, 0);
-      preview.src = canvas.toDataURL("image/png");
+      ctxUpdated.putImageData(imgData, 0, 0);
+      // preview.src = canvasUpdated.toDataURL("image/png");
     }
 
     // --- Кнопка "Печать" ---

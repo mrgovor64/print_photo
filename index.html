@@ -71,15 +71,15 @@
       originalCanvas.width = previewCanvas.width = 600;
       originalCanvas.height = previewCanvas.height = 600;
       ctxDraft.drawImage(video, 0, 0);
-      processImage();
+      error_diffusion(previewCanvas, originalCanvas);
     };
 
     document.getElementById('brightness').onchange = () => {
-      processImage();
+      error_diffusion(previewCanvas, originalCanvas);
     };
 
     document.getElementById('contrast').onchange = () => {
-      processImage();
+      error_diffusion(previewCanvas, originalCanvas);
     };
 
 
@@ -116,20 +116,27 @@
         );
 
         // --- обрабатываем изображение ---
-        processImage();
+        error_diffusion(previewCanvas, originalCanvas);
       };
 
       img.src = URL.createObjectURL(file);
     };
 
     // --- Обработка в ч/б ---
-    function processImage() {
+    function error_diffusion(previewCanvas, originalCanvas) {
       const brightness = document.getElementById('brightness').value;
       const contrast = document.getElementById('contrast').value;
 
       const ctx = previewCanvas.getContext("2d");
-      const { width: w, height: h } = originalCanvas;
-      ctx.drawImage(originalCanvas, 0, 0);
+
+      let w, h;
+
+      if (originalCanvas !== undefined) {
+        ({ width: w, height: h } = originalCanvas);
+        ctx.drawImage(originalCanvas, 0, 0);
+      } else {
+        ({ width: w, height: h } = previewCanvas);
+      }
 
       const imgData = ctx.getImageData(0, 0, w, h);
       const d = imgData.data;
@@ -191,7 +198,7 @@
 
 
     function composeFinal() {
-      const frameSrc = 'Polaroid.png'; // путь к шаблону (PNG с прозрачным окном)
+      const frameSrc = 'Polaroid error diffusion.png'; // путь к шаблону (PNG с прозрачным окном)
       const frame = new Image();
 
       frame.onload = function () {
@@ -205,18 +212,6 @@
 
         // рисуем рамку
         ctxFinal.drawImage(frame, 0, 0);
-
-        // вставляем фото с превью
-        const photoX = 19;  // позиция фото внутри рамки
-        const photoY = 19;
-        const photoW = 598;
-        const photoH = 598;
-
-        ctxFinal.drawImage(
-          previewCanvas,
-          0, 0, previewCanvas.width, previewCanvas.height,
-          photoX, photoY, photoW, photoH
-        );
 
         // подпись под фото
         ctxFinal.font = "bold 18px Arial";
@@ -235,6 +230,20 @@
 
         // рисуем дату на canvas
         ctxFinal.fillText(formattedDate, 530, 775);
+
+        // вставляем фото с превью
+        const photoX = 19;  // позиция фото внутри рамки
+        const photoY = 19;
+        const photoW = 598;
+        const photoH = 598;
+
+        ctxFinal.drawImage(
+          previewCanvas,
+          0, 0, previewCanvas.width, previewCanvas.height,
+          photoX, photoY, photoW, photoH
+        );
+
+
 
         // показать результат
         // const dataURL = finalCanvas.toDataURL('image/png');

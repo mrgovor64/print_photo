@@ -41,6 +41,7 @@
 
   <canvas id="originalCanvas"></canvas>
   <canvas id="previewCanvas"></canvas>
+  <canvas id="finalCanvas"></canvas>
   <h3>Чёрно-белое превью:</h3>
   <img id="preview" alt="предпросмотр" /><br>
   <button id="print">🖨️ Печать</button>
@@ -130,11 +131,11 @@
       const brightness = document.getElementById('brightness').value;
       const contrast = document.getElementById('contrast').value;
 
-      const ctxUpdated = previewCanvas.getContext("2d");
+      const ctx = previewCanvas.getContext("2d");
       const { width: w, height: h } = originalCanvas;
-      ctxUpdated.drawImage(originalCanvas, 0, 0);
+      ctx.drawImage(originalCanvas, 0, 0);
 
-      const imgData = ctxUpdated.getImageData(0, 0, w, h);
+      const imgData = ctx.getImageData(0, 0, w, h);
       const d = imgData.data;
 
       // Проходим по всем пикселям построчно
@@ -187,7 +188,7 @@
       }
 
       // записываем результат обратно на canvas
-      ctxUpdated.putImageData(imgData, 0, 0);
+      ctx.putImageData(imgData, 0, 0);
       // preview.src = previewCanvas.toDataURL("image/png");
     }
 

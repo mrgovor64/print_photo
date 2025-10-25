@@ -136,6 +136,7 @@
         ctx.drawImage(originalCanvas, 0, 0);
       } else {
         ({ width: w, height: h } = previewCanvas);
+        // ctx.clearRect(0, 0, w, h);
       }
 
       const imgData = ctx.getImageData(0, 0, w, h);
@@ -198,7 +199,7 @@
 
 
     function composeFinal() {
-      const frameSrc = 'Polaroid error diffusion.png'; // путь к шаблону (PNG с прозрачным окном)
+      const frameSrc = 'Polaroid.png'; // путь к шаблону (PNG с прозрачным окном)
       const frame = new Image();
 
       frame.onload = function () {
@@ -230,6 +231,8 @@
 
         // рисуем дату на canvas
         ctxFinal.fillText(formattedDate, 530, 775);
+
+        error_diffusion(finalCanvas);
 
         // вставляем фото с превью
         const photoX = 19;  // позиция фото внутри рамки

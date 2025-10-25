@@ -63,15 +63,11 @@
     // --- Съёмка фото ---
     const originalCanvas = document.getElementById('originalCanvas');
     const previewCanvas = document.getElementById('previewCanvas');
-    const preview = document.getElementById('preview');
+    // const preview = document.getElementById('preview');
+
     document.getElementById('snap').onclick = () => {
       const ctxDraft = originalCanvas.getContext('2d');
 
-      console.log(video.videoWidth);
-      console.log(video.videoHeight);
-
-      // originalCanvas.width = video.videoWidth;
-      // originalCanvas.height = video.videoHeight;
       originalCanvas.width = previewCanvas.width = 600;
       originalCanvas.height = previewCanvas.height = 600;
       ctxDraft.drawImage(video, 0, 0);
@@ -189,7 +185,64 @@
 
       // записываем результат обратно на canvas
       ctx.putImageData(imgData, 0, 0);
+      composeFinal();
       // preview.src = previewCanvas.toDataURL("image/png");
+    }
+
+
+    function composeFinal() {
+      const frameSrc = 'Polaroid.png'; // путь к шаблону (PNG с прозрачным окном)
+      const frame = new Image();
+
+      frame.onload = function () {
+        const previewCanvas = document.getElementById('previewCanvas');
+        const finalCanvas = document.getElementById('finalCanvas');
+        const ctxFinal = finalCanvas.getContext('2d');
+
+        // подгоняем размеры под шаблон
+        finalCanvas.width = frame.width;
+        finalCanvas.height = frame.height;
+
+        // рисуем рамку
+        ctxFinal.drawImage(frame, 0, 0);
+
+        // вставляем фото с превью
+        const photoX = 19;  // позиция фото внутри рамки
+        const photoY = 19;
+        const photoW = 598;
+        const photoH = 598;
+
+        ctxFinal.drawImage(
+          previewCanvas,
+          0, 0, previewCanvas.width, previewCanvas.height,
+          photoX, photoY, photoW, photoH
+        );
+
+        // подпись под фото
+        ctxFinal.font = "bold 18px Arial";
+        ctxFinal.fillStyle = "#333";
+
+
+        // получаем сегодняшнюю дату
+        const now = new Date();
+
+        // форматируем как DD.MM.YYYY
+        const formattedDate = now.toLocaleDateString('ru-RU', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+
+        // рисуем дату на canvas
+        ctxFinal.fillText(formattedDate, 530, 775);
+
+        // показать результат
+        // const dataURL = finalCanvas.toDataURL('image/png');
+        // document.getElementById('final-preview').src = dataURL;
+      };
+
+      // запускаем загрузку рамки
+      frame.src = frameSrc;
     }
 
     // --- Кнопка "Печать" ---

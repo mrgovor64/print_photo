@@ -39,8 +39,8 @@
   <button id="snap">Сделать фото</button>
   <input type="file" accept="image/*" id="upload">
 
-  <canvas id="canvasDraft"></canvas>
-  <canvas id="canvasUpdated"></canvas>
+  <canvas id="originalCanvas"></canvas>
+  <canvas id="previewCanvas"></canvas>
   <h3>Чёрно-белое превью:</h3>
   <img id="preview" alt="предпросмотр" /><br>
   <button id="print">🖨️ Печать</button>
@@ -60,19 +60,19 @@
     });
 
     // --- Съёмка фото ---
-    const canvas = document.getElementById('canvasDraft');
-    const canvasUpdated = document.getElementById('canvasUpdated');
+    const originalCanvas = document.getElementById('originalCanvas');
+    const previewCanvas = document.getElementById('previewCanvas');
     const preview = document.getElementById('preview');
     document.getElementById('snap').onclick = () => {
-      const ctxDraft = canvas.getContext('2d');
+      const ctxDraft = originalCanvas.getContext('2d');
 
       console.log(video.videoWidth);
       console.log(video.videoHeight);
 
-      // canvas.width = video.videoWidth;
-      // canvas.height = video.videoHeight;
-      canvas.width = canvasUpdated.width = 600;
-      canvas.height = canvasUpdated.height = 600;
+      // originalCanvas.width = video.videoWidth;
+      // originalCanvas.height = video.videoHeight;
+      originalCanvas.width = previewCanvas.width = 600;
+      originalCanvas.height = previewCanvas.height = 600;
       ctxDraft.drawImage(video, 0, 0);
       processImage();
     };
@@ -93,7 +93,7 @@
 
       const img = new Image();
       img.onload = () => {
-        const ctxDraft = canvas.getContext('2d');
+        const ctxDraft = originalCanvas.getContext('2d');
 
         // --- определяем исходные размеры ---
         const srcW = img.width;
@@ -108,8 +108,8 @@
 
         // --- задаём размер итогового canvas ---
         const targetSize = 600;
-        canvas.width = targetSize;
-        canvas.height = targetSize;
+        originalCanvas.width = targetSize;
+        originalCanvas.height = targetSize;
 
         // --- рисуем обрезанный квадрат, зумим в 600×600 ---
         ctxDraft.drawImage(
@@ -130,9 +130,9 @@
       const brightness = document.getElementById('brightness').value;
       const contrast = document.getElementById('contrast').value;
 
-      const ctxUpdated = canvasUpdated.getContext("2d");
-      const { width: w, height: h } = canvas;
-      ctxUpdated.drawImage(canvas, 0, 0);
+      const ctxUpdated = previewCanvas.getContext("2d");
+      const { width: w, height: h } = originalCanvas;
+      ctxUpdated.drawImage(originalCanvas, 0, 0);
 
       const imgData = ctxUpdated.getImageData(0, 0, w, h);
       const d = imgData.data;
@@ -188,12 +188,12 @@
 
       // записываем результат обратно на canvas
       ctxUpdated.putImageData(imgData, 0, 0);
-      // preview.src = canvasUpdated.toDataURL("image/png");
+      // preview.src = previewCanvas.toDataURL("image/png");
     }
 
     // --- Кнопка "Печать" ---
     document.getElementById('print').onclick = async () => {
-      const data = canvas.toDataURL('image/png');
+      const data = originalCanvas.toDataURL('image/png');
       console.log("Отправка фото на печать...");
       await sendToPrinter(data);
       alert("Фото отправлено на печать!");

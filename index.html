@@ -170,19 +170,16 @@
 
     // --- Обработка в ч/б ---
     function error_diffusion(previewCanvas, originalCanvas) {
-      const brightness = document.getElementById('brightness').value;
-      const contrast = document.getElementById('contrast').value;
 
       const ctx = previewCanvas.getContext("2d");
 
-      let w, h;
+      const w = (originalCanvas ? originalCanvas.width : previewCanvas.width);
+      const h = (originalCanvas ? originalCanvas.height : previewCanvas.height);
+      const brightness = (originalCanvas ? document.getElementById('brightness').value : 50);
+      const contrast = (originalCanvas ? document.getElementById('contrast').value : 50);
 
-      if (originalCanvas !== undefined) {
-        ({ width: w, height: h } = originalCanvas);
+      if (originalCanvas) {
         ctx.drawImage(originalCanvas, 0, 0);
-      } else {
-        ({ width: w, height: h } = previewCanvas);
-        // ctx.clearRect(0, 0, w, h);
       }
 
       const imgData = ctx.getImageData(0, 0, w, h);
@@ -284,10 +281,10 @@
         error_diffusion(finalCanvas);
 
         // вставляем фото с превью
-        const photoX = 19;  // позиция фото внутри рамки
-        const photoY = 19;
-        const photoW = 598;
-        const photoH = 598;
+        const photoX = 18;  // позиция фото внутри рамки
+        const photoY = 18;
+        const photoW = 600;
+        const photoH = 600;
 
         ctxFinal.drawImage(
           previewCanvas,

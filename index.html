@@ -210,6 +210,12 @@
         });
       }
       video.srcObject = stream;
+      // Отзеркаливание для фронтальной камеры
+      if (facingMode === "user") {
+        video.style.transform = "scaleX(-1)";
+      } else {
+        video.style.transform = "none";
+      }
     }
 
     // Кнопка переключения камеры

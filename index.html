@@ -16,6 +16,7 @@
     video,
     canvas,
     img {
+      display: block;
       width: 100%;
       max-width: 400px;
       /* height: 600px; */
@@ -29,24 +30,62 @@
       padding: 10px 15px;
       font-size: 16px;
     }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      font-size: 1rem;
+      width: 90%;
+      max-width: 400px;
+      margin: 1rem auto;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    input[type="range"] {
+      accent-color: #658bc7;
+      /* твой фирменный цвет */
+      width: 100%;
+    }
   </style>
 </head>
 
 <body>
   <h2>📸 Сделай фото или выбери из галереи</h2>
-
+  <div id="photo">
   <video id="video" autoplay playsinline></video><br>
   <button id="snap">Сделать фото</button>
+    или
   <input type="file" accept="image/*" id="upload">
+  </div>
 
-  <canvas id="originalCanvas"></canvas>
-  <canvas id="previewCanvas"></canvas>
+  <div id="preview" hidden>
+    <canvas id="originalCanvas" style="display: none;"></canvas>
+    <canvas id="previewCanvas" style="display: none;"></canvas>
   <canvas id="finalCanvas"></canvas>
-  <h3>Чёрно-белое превью:</h3>
-  <img id="preview" alt="предпросмотр" /><br>
+
+    <div class="controls">
+      <label>
+        ☀️ Яркость
+        <input type="range" id="brightness" min="0" max="100" value="50" step="1">
+        <span id="brightnessValue">50</span>
+      </label>
+
+      <label>
+        🌓 Контраст
+        <input type="range" id="contrast" min="0" max="100" value="50" step="1">
+        <span id="contrastValue">50</span>
+      </label>
+    </div>
+  </div>
+
+  <button id="otherPhoto">Сделать другое фото</button>
   <button id="print">🖨️ Печать</button>
-  <input type="number" value="50" min="0" max="100" step="5" id="brightness">
-  <input type="number" value="50" min="5" max="100" step="5" id="contrast">
 
   <script>
     // --- Инициализация камеры ---
@@ -72,16 +111,20 @@
       originalCanvas.height = previewCanvas.height = 600;
       ctxDraft.drawImage(video, 0, 0);
       error_diffusion(previewCanvas, originalCanvas);
+
+      document.getElementById('photo').style.display = "none";
+      document.getElementById('preview').style.display = "block";
     };
 
-    document.getElementById('brightness').onchange = () => {
+    // Обновление текста рядом и обработка изменений
+    ["brightness", "contrast"].forEach(id => {
+      const input = document.getElementById(id);
+      const label = document.getElementById(id + "Value");
+      input.addEventListener("input", () => {
+        label.textContent = input.value;
       error_diffusion(previewCanvas, originalCanvas);
-    };
-
-    document.getElementById('contrast').onchange = () => {
-      error_diffusion(previewCanvas, originalCanvas);
-    };
-
+      });
+    });
 
     // --- Загрузка из галереи ---
     document.getElementById('upload').onchange = e => {
@@ -120,6 +163,9 @@
       };
 
       img.src = URL.createObjectURL(file);
+
+      document.getElementById('photo').style.display = "none";
+      document.getElementById('preview').style.display = "block";
     };
 
     // --- Обработка в ч/б ---
@@ -197,6 +243,10 @@
       // preview.src = previewCanvas.toDataURL("image/png");
     }
 
+    document.getElementById('otherPhoto').onclick = () => {
+      document.getElementById('photo').style.display = "block";
+      document.getElementById('preview').style.display = "none";
+    }
 
     function composeFinal() {
       const frameSrc = 'Polaroid.png'; // путь к шаблону (PNG с прозрачным окном)
@@ -217,7 +267,6 @@
         // подпись под фото
         ctxFinal.font = "bold 18px Arial";
         ctxFinal.fillStyle = "#333";
-
 
         // получаем сегодняшнюю дату
         const now = new Date();
@@ -245,8 +294,6 @@
           0, 0, previewCanvas.width, previewCanvas.height,
           photoX, photoY, photoW, photoH
         );
-
-
 
         // показать результат
         // const dataURL = finalCanvas.toDataURL('image/png');

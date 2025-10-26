@@ -429,12 +429,69 @@
       frame.src = frameSrc;
     }
 
-    // --- Кнопка "Печать" ---
-    document.getElementById('print').onclick = async () => {
-      const data = originalCanvas.toDataURL('image/png');
-      console.log("Отправка фото на печать...");
-      await sendToPrinter(data);
-      alert("Фото отправлено на печать!");
+    // --- Кнопка "Печать" с защитой от повторного нажатия ---
+    let isPrinting = false;
+
+    const printBtn = document.getElementById('print');
+
+    printBtn.onclick = async () => {
+      if (isPrinting) return;
+
+      isPrinting = true;
+      printBtn.disabled = true;
+
+      // Изменяем внешний вид кнопки
+      const originalText = printBtn.innerHTML;
+      printBtn.innerHTML = "🖨️ Imprimiendo...";
+      printBtn.style.background = "#aaa";
+
+      let printSuccess = false;
+      try {
+        const data = originalCanvas.toDataURL('image/png');
+        console.log("Отправка фото на печать...");
+
+        // Таймаут-промис для ограничения времени печати
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Tiempo de espera agotado")), 3000)
+        );
+        await Promise.race([
+          sendToPrinter(data),
+          timeoutPromise
+        ]);
+
+        printBtn.innerHTML = "✅ ¡Impresión completada! Espera 15 segundos antes de la siguiente impresión.";
+        printBtn.style.background = "#4CAF50"; // зелёный
+        printSuccess = true;
+      } catch (e) {
+        console.error("Ошибка при печати:", e);
+        // Проверка типа ошибки
+        const msg = (e && e.message) ? e.message : String(e);
+        if (
+          msg.includes("Tiempo de espera agotado") ||
+          msg.includes("TypeError")
+        ) {
+          alert("⚠️ No se pudo conectar con la impresora. Asegúrate de estar conectado a nuestro Wi‑Fi.");
+        } else {
+          alert("❌ Error de impresión. Por favor, inténtalo de nuevo.");
+        }
+        printSuccess = false;
+      } finally {
+        if (printSuccess) {
+          // Сбрасываем через 15 секунд
+          setTimeout(() => {
+            isPrinting = false;
+            printBtn.disabled = false;
+            printBtn.innerHTML = originalText;
+            printBtn.style.background = ""; // вернуть стиль по умолчанию
+          }, 15000);
+        } else {
+          // Ошибка — сразу разблокируем и возвращаем кнопку в исходное состояние
+          isPrinting = false;
+          printBtn.disabled = false;
+          printBtn.innerHTML = originalText;
+          printBtn.style.background = "";
+        }
+      }
     };
 
     function canvasTo1bitBase64(canvas) {

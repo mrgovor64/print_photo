@@ -25,6 +25,38 @@
       border: 1px solid #ccc;
     }
 
+    .overlay-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(101, 139, 199, 0.9);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      transition: all 0.2s ease;
+    }
+
+    .overlay-btn:hover {
+      background: rgba(79, 111, 168, 1);
+      transform: scale(1.05);
+    }
+
+    .video-wrapper {
+      position: relative;
+      display: inline-block;
+      border-radius: 8px;
+      overflow: hidden;
+      /* чтобы кнопка не вылезала за края */
+    }
+
     button,
     input[type=file] {
       margin: 5px;
@@ -111,18 +143,18 @@
 <body>
   <h2>📸 ¡Guarda tu momento más dulce con nosotros!</h2>
   <div id="photo">
-    <video id="video" autoplay playsinline></video><br>
-
+    <div class="video-wrapper">
+      <video id="video" autoplay playsinline></video>
+      <button id="switchCamera" class="overlay-btn">🔄</button>
+    </div>
     <div class="photo-controls">
       <button id="snap">📸 Tomar foto</button>
       <span class="separator">o</span>
-
       <label class="file-btn">
         📂 Subir foto
         <input type="file" accept="image/*" id="upload" hidden>
       </label>
     </div>
-
   </div>
 
   <div id="preview" hidden>
@@ -148,16 +180,45 @@
   </div>
 
   <script>
-    // --- Инициализация камеры ---
+    // --- Инициализация камеры с поддержкой переключения ---
     const video = document.getElementById('video');
-    navigator.mediaDevices.getUserMedia({
-      video: {
-        width: 600,
-        height: 600
+    let currentFacingMode = "user";
+    let stream = null;
+
+    async function startCamera(facingMode) {
+      // Остановить предыдущий поток, если есть
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
       }
-    }).then(stream => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: 600,
+            height: 600,
+            facingMode: { exact: facingMode }
+          }
+        });
+      } catch (e) {
+        // Если exact не поддерживается (например, на десктопе), пробуем без exact
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: 600,
+            height: 600,
+            facingMode: facingMode
+          }
+        });
+      }
       video.srcObject = stream;
-    });
+    }
+
+    // Кнопка переключения камеры
+    document.getElementById("switchCamera").onclick = async () => {
+      currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
+      await startCamera(currentFacingMode);
+    };
+
+    // Запуск фронтальной камеры по умолчанию при загрузке
+    startCamera(currentFacingMode);
 
     // --- Съёмка фото ---
     const originalCanvas = document.getElementById('originalCanvas');

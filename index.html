@@ -52,6 +52,58 @@
       /* твой фирменный цвет */
       width: 100%;
     }
+
+    .photo-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    button,
+    .file-btn {
+      background: #658bc7;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover,
+    .file-btn:hover {
+      background: #4f6fa8;
+    }
+
+    button:active,
+    .file-btn:active {
+      background: #3e5b8a;
+    }
+
+    .separator {
+      color: #555;
+      font-weight: bold;
+    }
+
+    .file-btn {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .file-btn input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
   </style>
 </head>
 
@@ -59,9 +111,17 @@
   <h2>📸 ¡Guarda tu momento más dulce con nosotros!</h2>
   <div id="photo">
     <video id="video" autoplay playsinline></video><br>
-    <button id="snap">Tomar foto</button>
-    o
-    <input type="file" accept="image/*" id="upload">
+
+    <div class="photo-controls">
+      <button id="snap">📸 Tomar foto</button>
+      <span class="separator">o</span>
+
+      <label class="file-btn">
+        📂 Subir foto
+        <input type="file" accept="image/*" id="upload" hidden>
+      </label>
+    </div>
+
   </div>
 
   <div id="preview" hidden>

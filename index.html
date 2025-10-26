@@ -456,7 +456,6 @@
 
       let printSuccess = false;
       try {
-        const data = originalCanvas.toDataURL('image/png');
         console.log("Отправка фото на печать...");
 
         // Таймаут-промис для ограничения времени печати
@@ -464,7 +463,7 @@
           setTimeout(() => reject(new Error("Tiempo de espera agotado")), 3000)
         );
         await Promise.race([
-          sendToPrinter(data),
+          sendToPrinter(),
           timeoutPromise
         ]);
 
@@ -565,17 +564,12 @@
 
     // --- Пример функции отправки ---
     async function sendToPrinter() {
-      const base64mono = (finalCanvas);
+      const finalCanvas = document.getElementById('finalCanvas');
+      const width = finalCanvas.width;
+      const height = finalCanvas.height;
+      const base64mono = canvasTo1bitBase64(finalCanvas);
       console.log(base64mono);
-
-      const xml = `
-  <epos-print>
-    <image width="600" height="600" color="mono" mode="graphic">
-      ${base64mono}
-    </image>
-    <cut type="feed"/>
-  </epos-print>`;
-
+      const xml = `<epos-print><image width="${width}" height="${height}" color="mono" mode="graphic">${base64mono}</image><cut type="feed"/></epos-print>`;
       const response = await fetch(
         "https://192.168.10.170:8443/cgi-bin/epos/service.cgi?devid=local_printer",
         {
@@ -586,7 +580,6 @@
           body: xml
         }
       );
-
       const text = await response.text();
       console.log("Printer response:", text);
     }

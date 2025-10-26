@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Фото для печати</title>
+  <title>Privet – Momentos dulces</title>
   <style>
     body {
       font-family: sans-serif;
@@ -56,11 +56,11 @@
 </head>
 
 <body>
-  <h2>📸 Сделай фото или выбери из галереи</h2>
+  <h2>📸 ¡Guarda tu momento más dulce con nosotros!</h2>
   <div id="photo">
     <video id="video" autoplay playsinline></video><br>
-    <button id="snap">Сделать фото</button>
-    или
+    <button id="snap">Tomar foto</button>
+    o
     <input type="file" accept="image/*" id="upload">
   </div>
 
@@ -71,21 +71,21 @@
 
     <div class="controls">
       <label>
-        ☀️ Яркость
+        ☀️ Brillo
         <input type="range" id="brightness" min="0" max="100" value="50" step="1">
         <span id="brightnessValue">50</span>
       </label>
 
       <label>
-        🌓 Контраст
+        🌓 Contraste
         <input type="range" id="contrast" min="0" max="100" value="50" step="1">
         <span id="contrastValue">50</span>
       </label>
     </div>
   </div>
 
-  <button id="otherPhoto">Сделать другое фото</button>
-  <button id="print">🖨️ Печать</button>
+  <button id="otherPhoto">Tomar otra foto</button>
+  <button id="print">🖨️ Imprimir</button>
 
   <script>
     // --- Инициализация камеры ---

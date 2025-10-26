@@ -58,16 +58,16 @@
 <body>
   <h2>📸 Сделай фото или выбери из галереи</h2>
   <div id="photo">
-  <video id="video" autoplay playsinline></video><br>
-  <button id="snap">Сделать фото</button>
+    <video id="video" autoplay playsinline></video><br>
+    <button id="snap">Сделать фото</button>
     или
-  <input type="file" accept="image/*" id="upload">
+    <input type="file" accept="image/*" id="upload">
   </div>
 
   <div id="preview" hidden>
     <canvas id="originalCanvas" style="display: none;"></canvas>
     <canvas id="previewCanvas" style="display: none;"></canvas>
-  <canvas id="finalCanvas"></canvas>
+    <canvas id="finalCanvas"></canvas>
 
     <div class="controls">
       <label>
@@ -122,7 +122,7 @@
       const label = document.getElementById(id + "Value");
       input.addEventListener("input", () => {
         label.textContent = input.value;
-      error_diffusion(previewCanvas, originalCanvas);
+        error_diffusion(previewCanvas, originalCanvas);
       });
     });
 

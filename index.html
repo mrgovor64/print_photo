@@ -234,10 +234,19 @@
 
     document.getElementById('snap').onclick = () => {
       const ctxDraft = originalCanvas.getContext('2d');
-
       originalCanvas.width = previewCanvas.width = 600;
       originalCanvas.height = previewCanvas.height = 600;
-      ctxDraft.drawImage(video, 0, 0);
+
+      if (currentFacingMode === "user") {
+        // Отразить по X
+        ctxDraft.translate(originalCanvas.width, 0);
+        ctxDraft.scale(-1, 1);
+        ctxDraft.drawImage(video, 0, 0, originalCanvas.width, originalCanvas.height);
+        ctxDraft.setTransform(1, 0, 0, 1, 0, 0); // сброс трансформации
+      } else {
+        ctxDraft.drawImage(video, 0, 0, originalCanvas.width, originalCanvas.height);
+      }
+
       error_diffusion(previewCanvas, originalCanvas);
 
       document.getElementById('photo').style.display = "none";

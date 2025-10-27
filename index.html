@@ -193,8 +193,8 @@
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            width: 527,
-            height: 527,
+            width: 526,
+            height: 526,
             facingMode: { exact: facingMode }
           }
         });
@@ -202,8 +202,8 @@
         // Если exact не поддерживается (например, на десктопе), пробуем без exact
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            width: 527,
-            height: 527,
+            width: 526,
+            height: 526,
             facingMode: facingMode
           }
         });
@@ -233,8 +233,8 @@
 
     document.getElementById('snap').onclick = () => {
       const ctxDraft = originalCanvas.getContext('2d');
-      originalCanvas.width = previewCanvas.width = 527;
-      originalCanvas.height = previewCanvas.height = 527;
+      originalCanvas.width = previewCanvas.width = 526;
+      originalCanvas.height = previewCanvas.height = 526;
 
       if (currentFacingMode === "user") {
         // Отразить по X
@@ -283,11 +283,11 @@
         const sy = (srcH - side) / 2;
 
         // --- задаём размер итогового canvas ---
-        const targetSize = 527;
+        const targetSize = 526;
         originalCanvas.width = targetSize;
         originalCanvas.height = targetSize;
 
-        // --- рисуем обрезанный квадрат, зумим в 527 ---
+        // --- рисуем обрезанный квадрат, зумим в 526 ---
         ctxDraft.drawImage(
           img,            // источник
           sx, sy, side, side, // что взять из оригинала
@@ -417,10 +417,10 @@
         error_diffusion(finalCanvas);
 
         // вставляем фото с превью
-        const photoX = 16.5;  // позиция фото внутри рамки
-        const photoY = 16.5;
-        const photoW = 527;
-        const photoH = 527;
+        const photoX = 17;  // позиция фото внутри рамки
+        const photoY = 17;
+        const photoW = 526;
+        const photoH = 526;
 
         ctxFinal.drawImage(
           previewCanvas,

@@ -20,7 +20,6 @@
       display: block;
       width: 100%;
       max-width: 400px;
-      /* height: 600px; */
       margin: 10px auto;
       border: 1px solid #ccc;
     }
@@ -194,8 +193,8 @@
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            width: 600,
-            height: 600,
+            width: 527,
+            height: 527,
             facingMode: { exact: facingMode }
           }
         });
@@ -203,8 +202,8 @@
         // Если exact не поддерживается (например, на десктопе), пробуем без exact
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            width: 600,
-            height: 600,
+            width: 527,
+            height: 527,
             facingMode: facingMode
           }
         });
@@ -234,8 +233,8 @@
 
     document.getElementById('snap').onclick = () => {
       const ctxDraft = originalCanvas.getContext('2d');
-      originalCanvas.width = previewCanvas.width = 600;
-      originalCanvas.height = previewCanvas.height = 600;
+      originalCanvas.width = previewCanvas.width = 527;
+      originalCanvas.height = previewCanvas.height = 527;
 
       if (currentFacingMode === "user") {
         // Отразить по X
@@ -284,11 +283,11 @@
         const sy = (srcH - side) / 2;
 
         // --- задаём размер итогового canvas ---
-        const targetSize = 600;
+        const targetSize = 527;
         originalCanvas.width = targetSize;
         originalCanvas.height = targetSize;
 
-        // --- рисуем обрезанный квадрат, зумим в 600×600 ---
+        // --- рисуем обрезанный квадрат, зумим в 527 ---
         ctxDraft.drawImage(
           img,            // источник
           sx, sy, side, side, // что взять из оригинала
@@ -413,15 +412,15 @@
         });
 
         // рисуем дату на canvas
-        ctxFinal.fillText(formattedDate, 530, 775);
+        ctxFinal.fillText(formattedDate, 450, 680);
 
         error_diffusion(finalCanvas);
 
         // вставляем фото с превью
-        const photoX = 18;  // позиция фото внутри рамки
-        const photoY = 18;
-        const photoW = 600;
-        const photoH = 600;
+        const photoX = 16.5;  // позиция фото внутри рамки
+        const photoY = 16.5;
+        const photoW = 527;
+        const photoH = 527;
 
         ctxFinal.drawImage(
           previewCanvas,

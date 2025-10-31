@@ -305,17 +305,17 @@
     };
 
     // --- Обработка в ч/б ---
-    function error_diffusion(previewCanvas, originalCanvas) {
+    function error_diffusion(destinationCanvas, sourceCanvas) {
 
-      const ctx = previewCanvas.getContext("2d");
+      const ctx = destinationCanvas.getContext("2d");
 
-      const w = (originalCanvas ? originalCanvas.width : previewCanvas.width);
-      const h = (originalCanvas ? originalCanvas.height : previewCanvas.height);
-      const brightness = (originalCanvas ? document.getElementById('brightness').value : 50);
-      const contrast = (originalCanvas ? document.getElementById('contrast').value : 50);
+      const w = (sourceCanvas ? sourceCanvas.width : destinationCanvas.width);
+      const h = (sourceCanvas ? sourceCanvas.height : destinationCanvas.height);
+      const brightness = (sourceCanvas ? document.getElementById('brightness').value : 50);
+      const contrast = (sourceCanvas ? document.getElementById('contrast').value : 50);
 
-      if (originalCanvas) {
-        ctx.drawImage(originalCanvas, 0, 0);
+      if (sourceCanvas) {
+        ctx.drawImage(sourceCanvas, 0, 0);
       }
 
       const imgData = ctx.getImageData(0, 0, w, h);
@@ -372,7 +372,9 @@
 
       // записываем результат обратно на canvas
       ctx.putImageData(imgData, 0, 0);
-      composeFinal();
+      if (sourceCanvas) {
+        composeFinal();
+      }
       // preview.src = previewCanvas.toDataURL("image/png");
     }
 

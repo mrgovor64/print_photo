@@ -161,6 +161,7 @@
     <canvas id="originalCanvas" style="display: none;"></canvas>
     <canvas id="previewCanvas" style="display: none;"></canvas>
     <canvas id="finalCanvas"></canvas>
+    <canvas id="printerCanvas"></canvas>
 
     <div class="controls">
       <label>
@@ -229,6 +230,8 @@
     // --- Съёмка фото ---
     const originalCanvas = document.getElementById('originalCanvas');
     const previewCanvas = document.getElementById('previewCanvas');
+    const finalCanvas = document.getElementById('finalCanvas');
+    const printerCanvas = document.getElementById('printerCanvas');
     // const preview = document.getElementById('preview');
 
     document.getElementById('snap').onclick = () => {
@@ -311,6 +314,7 @@
 
       const w = (sourceCanvas ? sourceCanvas.width : destinationCanvas.width);
       const h = (sourceCanvas ? sourceCanvas.height : destinationCanvas.height);
+
       const brightness = (sourceCanvas ? document.getElementById('brightness').value : 50);
       const contrast = (sourceCanvas ? document.getElementById('contrast').value : 50);
 
@@ -372,10 +376,11 @@
 
       // записываем результат обратно на canvas
       ctx.putImageData(imgData, 0, 0);
+
       if (sourceCanvas) {
         composeFinal();
       }
-      // preview.src = previewCanvas.toDataURL("image/png");
+
     }
 
     document.getElementById('otherPhoto').onclick = () => {
@@ -388,8 +393,6 @@
       const frame = new Image();
 
       frame.onload = function () {
-        const previewCanvas = document.getElementById('previewCanvas');
-        const finalCanvas = document.getElementById('finalCanvas');
         const ctxFinal = finalCanvas.getContext('2d');
 
         // подгоняем размеры под шаблон
@@ -433,10 +436,50 @@
         // показать результат
         // const dataURL = finalCanvas.toDataURL('image/png');
         // document.getElementById('final-preview').src = dataURL;
+        thinOutPrint();
       };
 
       // запускаем загрузку рамки
       frame.src = frameSrc;
+    }
+
+    function thinOutPrint() {
+
+      const ctx = printerCanvas.getContext("2d");
+
+      const w = (finalCanvas ? finalCanvas.width : printerCanvas.width);
+      const h = (finalCanvas ? finalCanvas.height : printerCanvas.height);
+
+      printerCanvas.width = w;
+      printerCanvas.height = h;
+
+      ctx.drawImage(finalCanvas, 0, 0);
+
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const d = imgData.data;
+
+      // Проходим по всем пикселям построчно
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const i = (y * w + x) * 4;
+
+          const oldPixel = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2])
+          const newPixel = oldPixel < 128 ? 0 : 255; // бинаризация
+
+          // применяем новое значение
+
+          // d[i] = d[i + 1] = d[i + 2] = newPixel <= 128 ? (Math.random() * 100 <= 20 ? 255 : 0) : 255; // процентное вычитание
+          // d[i] = d[i + 1] = d[i + 2] = ((x + y + Math.round(Math.random() * 2)) % 6 ? newPixel : 255); // вычитание каждого н пикселя
+          d[i] = d[i + 1] = d[i + 2] = newPixel;
+
+        }
+      }
+
+      // записываем результат обратно на canvas
+      ctx.putImageData(imgData, 0, 0);
+
+      console.log(printerCanvas.width);
+      console.log(printerCanvas.height);
     }
 
     // --- Кнопка "Печать" с защитой от повторного нажатия ---
@@ -568,7 +611,7 @@
       const finalCanvas = document.getElementById('finalCanvas');
       const width = finalCanvas.width;
       const height = finalCanvas.height;
-      const base64mono = canvasTo1bitBase64(finalCanvas);
+      const base64mono = canvasTo1bitBase64(printerCanvas);
       console.log(base64mono);
       const xml = `<epos-print><image width="${width}" height="${height}" color="mono" mode="graphic">${base64mono}</image><cut type="feed"/></epos-print>`;
       const response = await fetch(

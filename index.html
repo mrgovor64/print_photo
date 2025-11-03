@@ -158,9 +158,9 @@
   </div>
 
   <div id="preview" hidden>
-    <canvas id="originalCanvas" style="display: none;"></canvas>
-    <canvas id="previewCanvas" style="display: none;"></canvas>
-    <canvas id="finalCanvas"></canvas>
+    <canvas id="originalCanvas"></canvas>
+    <canvas id="previewCanvas"></canvas>
+    <canvas id="finalPreviewCanvas"></canvas>
     <canvas id="printerCanvas"></canvas>
 
     <div class="controls">
@@ -230,7 +230,7 @@
     // --- Съёмка фото ---
     const originalCanvas = document.getElementById('originalCanvas');
     const previewCanvas = document.getElementById('previewCanvas');
-    const finalCanvas = document.getElementById('finalCanvas');
+    const finalPreviewCanvas = document.getElementById('finalPreviewCanvas');
     const printerCanvas = document.getElementById('printerCanvas');
     // const preview = document.getElementById('preview');
 
@@ -399,11 +399,11 @@
       const frame = new Image();
 
       frame.onload = function () {
-        const ctxFinal = finalCanvas.getContext('2d');
+        const ctxFinal = finalPreviewCanvas.getContext('2d');
 
         // подгоняем размеры под шаблон
-        finalCanvas.width = frame.width;
-        finalCanvas.height = frame.height;
+        finalPreviewCanvas.width = frame.width;
+        finalPreviewCanvas.height = frame.height;
 
         // рисуем рамку
         ctxFinal.drawImage(frame, 0, 0);
@@ -425,7 +425,7 @@
         // рисуем дату на canvas
         ctxFinal.fillText(formattedDate, 450, 680);
 
-        error_diffusion(finalCanvas);
+        error_diffusion(finalPreviewCanvas);
 
         // вставляем фото с превью
         const photoX = 17;  // позиция фото внутри рамки
@@ -440,7 +440,7 @@
         );
 
         // показать результат
-        // const dataURL = finalCanvas.toDataURL('image/png');
+        // const dataURL = finalPreviewCanvas.toDataURL('image/png');
         // document.getElementById('final-preview').src = dataURL;
         thinOutPrint();
       };
@@ -453,13 +453,13 @@
 
       const ctx = printerCanvas.getContext("2d");
 
-      const w = (finalCanvas ? finalCanvas.width : printerCanvas.width);
-      const h = (finalCanvas ? finalCanvas.height : printerCanvas.height);
+      const w = (finalPreviewCanvas ? finalPreviewCanvas.width : printerCanvas.width);
+      const h = (finalPreviewCanvas ? finalPreviewCanvas.height : printerCanvas.height);
 
       printerCanvas.width = w;
       printerCanvas.height = h;
 
-      ctx.drawImage(finalCanvas, 0, 0);
+      ctx.drawImage(finalPreviewCanvas, 0, 0);
 
       const imgData = ctx.getImageData(0, 0, w, h);
       const d = imgData.data;
@@ -624,9 +624,9 @@
 
     // --- Пример функции отправки ---
     async function sendToPrinter() {
-      const finalCanvas = document.getElementById('finalCanvas');
-      const width = finalCanvas.width;
-      const height = finalCanvas.height;
+      const finalPreviewCanvas = document.getElementById('finalPreviewCanvas');
+      const width = finalPreviewCanvas.width;
+      const height = finalPreviewCanvas.height;
       const base64mono = canvasTo1bitBase64(printerCanvas);
       // console.log(base64mono);
       const xml = `<epos-print><image width="${width}" height="${height}" color="mono" mode="graphic">${base64mono}</image><cut type="feed"/></epos-print>`;

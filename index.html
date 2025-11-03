@@ -315,6 +315,12 @@
       const w = (sourceCanvas ? sourceCanvas.width : destinationCanvas.width);
       const h = (sourceCanvas ? sourceCanvas.height : destinationCanvas.height);
 
+      // Устанавливаем размеры destinationCanvas, если есть sourceCanvas
+      if (sourceCanvas) {
+        destinationCanvas.width = w;
+        destinationCanvas.height = h;
+      }
+
       const brightness = (sourceCanvas ? document.getElementById('brightness').value : 50);
       const contrast = (sourceCanvas ? document.getElementById('contrast').value : 50);
 
@@ -468,9 +474,21 @@
 
           // применяем новое значение
 
-          // d[i] = d[i + 1] = d[i + 2] = newPixel <= 128 ? (Math.random() * 100 <= 20 ? 255 : 0) : 255; // процентное вычитание
+          // d[i] = d[i + 1] = d[i + 2] = newPixel <= 128 ? (Math.random() * 100 <= 10 ? 255 : 0) : 255; // процентное вычитание
           // d[i] = d[i + 1] = d[i + 2] = ((x + y + Math.round(Math.random() * 2)) % 6 ? newPixel : 255); // вычитание каждого н пикселя
-          d[i] = d[i + 1] = d[i + 2] = newPixel;
+          // d[i] = d[i + 1] = d[i + 2] = newPixel;
+          // d[i] = d[i + 1] = d[i + 2] = ((x + y) % 4) ? 255 : 0; // заливка
+          // d[i] = d[i + 1] = d[i + 2] = ((x + y) % (Math.ceil(y / 100) + 1)) ? 255 : 0; // заливка градиентом
+          if (x > 2) {
+            let sum = 0;
+            sum += d[(y * w + (x - 1)) * 4];
+            sum += d[(y * w + (x - 2)) * 4];
+            sum += d[(y * w + (x - 3)) * 4];
+
+            sum = Math.round(sum / 255);
+
+            // d[i] = d[i + 1] = d[i + 2] = (sum < 2 && Math.random() * 100 <= 20) ? 255 : newPixel; // заливка градиентом
+          }
 
         }
       }
@@ -478,8 +496,6 @@
       // записываем результат обратно на canvas
       ctx.putImageData(imgData, 0, 0);
 
-      console.log(printerCanvas.width);
-      console.log(printerCanvas.height);
     }
 
     // --- Кнопка "Печать" с защитой от повторного нажатия ---
@@ -612,7 +628,7 @@
       const width = finalCanvas.width;
       const height = finalCanvas.height;
       const base64mono = canvasTo1bitBase64(printerCanvas);
-      console.log(base64mono);
+      // console.log(base64mono);
       const xml = `<epos-print><image width="${width}" height="${height}" color="mono" mode="graphic">${base64mono}</image><cut type="feed"/></epos-print>`;
       const response = await fetch(
         "https://192.168.10.170:8443/cgi-bin/epos/service.cgi?devid=local_printer",

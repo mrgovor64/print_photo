@@ -160,6 +160,8 @@
   <div id="preview" hidden>
     <canvas id="originalCanvas"></canvas>
     <canvas id="previewCanvas"></canvas>
+    <canvas id="previewPrinterCanvas"></canvas>
+
     <canvas id="finalPreviewCanvas"></canvas>
     <canvas id="printerCanvas"></canvas>
 
@@ -230,6 +232,7 @@
     // --- Съёмка фото ---
     const originalCanvas = document.getElementById('originalCanvas');
     const previewCanvas = document.getElementById('previewCanvas');
+    const previewPrinterCanvas = document.getElementById('previewPrinterCanvas');
     const finalPreviewCanvas = document.getElementById('finalPreviewCanvas');
     const printerCanvas = document.getElementById('printerCanvas');
     // const preview = document.getElementById('preview');
@@ -250,6 +253,7 @@
       }
 
       error_diffusion(previewCanvas, originalCanvas);
+      error_diffusion(previewPrinterCanvas, originalCanvas, 40);
 
       document.getElementById('photo').style.display = "none";
       document.getElementById('preview').style.display = "block";
@@ -308,7 +312,7 @@
     };
 
     // --- Обработка в ч/б ---
-    function error_diffusion(destinationCanvas, sourceCanvas) {
+    function error_diffusion(destinationCanvas, sourceCanvas, shiftUp = 0) {
 
       const ctx = destinationCanvas.getContext("2d");
 
@@ -337,8 +341,7 @@
           const i = (y * w + x) * 4;
 
           // вычисляем яркость (0–255)
-
-          const oldPixel = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2])
+          const oldPixel = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255 * (255 - shiftUp) + shiftUp
 
           const factor = (contrast - 50) / 50  // диапазон от -1 до +1
           contrastFactor = Math.tan((factor + 1) * Math.PI / 4)
@@ -384,7 +387,8 @@
       ctx.putImageData(imgData, 0, 0);
 
       if (sourceCanvas) {
-        composeFinal();
+        composeFinal(finalPreviewCanvas, previewCanvas);
+        composeFinal(printerCanvas, previewPrinterCanvas);
       }
 
     }
@@ -394,16 +398,16 @@
       document.getElementById('preview').style.display = "none";
     }
 
-    function composeFinal() {
+    function composeFinal(destinationCanvas, sourceCanvas) {
       const frameSrc = 'Polaroid.png'; // путь к шаблону (PNG с прозрачным окном)
       const frame = new Image();
 
       frame.onload = function () {
-        const ctxFinal = finalPreviewCanvas.getContext('2d');
+        const ctxFinal = destinationCanvas.getContext('2d');
 
         // подгоняем размеры под шаблон
-        finalPreviewCanvas.width = frame.width;
-        finalPreviewCanvas.height = frame.height;
+        destinationCanvas.width = frame.width;
+        destinationCanvas.height = frame.height;
 
         // рисуем рамку
         ctxFinal.drawImage(frame, 0, 0);
@@ -425,7 +429,7 @@
         // рисуем дату на canvas
         ctxFinal.fillText(formattedDate, 450, 680);
 
-        error_diffusion(finalPreviewCanvas);
+        error_diffusion(destinationCanvas);
 
         // вставляем фото с превью
         const photoX = 17;  // позиция фото внутри рамки
@@ -434,15 +438,12 @@
         const photoH = 526;
 
         ctxFinal.drawImage(
-          previewCanvas,
-          0, 0, previewCanvas.width, previewCanvas.height,
+          sourceCanvas,
+          0, 0, sourceCanvas.width, sourceCanvas.height,
           photoX, photoY, photoW, photoH
         );
 
-        // показать результат
-        // const dataURL = finalPreviewCanvas.toDataURL('image/png');
-        // document.getElementById('final-preview').src = dataURL;
-        thinOutPrint();
+        // thinOutPrint();
       };
 
       // запускаем загрузку рамки

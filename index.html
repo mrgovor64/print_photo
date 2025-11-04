@@ -266,11 +266,15 @@
       input.addEventListener("input", () => {
         label.textContent = input.value;
         error_diffusion(previewCanvas, originalCanvas);
+        error_diffusion(previewPrinterCanvas, originalCanvas, 40);
       });
     });
 
     // --- Загрузка из галереи ---
     document.getElementById('upload').onchange = e => {
+
+      console.log(123);
+
       const file = e.target.files[0];
       if (!file) return;
 
@@ -303,6 +307,7 @@
 
         // --- обрабатываем изображение ---
         error_diffusion(previewCanvas, originalCanvas);
+        error_diffusion(previewPrinterCanvas, originalCanvas, 40);
       };
 
       img.src = URL.createObjectURL(file);

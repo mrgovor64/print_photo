@@ -648,7 +648,7 @@
       // console.log(base64mono);
       const xml = `<epos-print><image width="${width}" height="${height}" color="mono" mode="graphic">${base64mono}</image><cut type="feed"/></epos-print>`;
       const response = await fetch(
-        "http://192.168.10.170:8080/cgi-bin/epos/service.cgi?devid=local_printer",
+        "http://192.168.1.120:8080/cgi-bin/epos/service.cgi?devid=local_printer",
         {
           method: "POST",
           headers: {

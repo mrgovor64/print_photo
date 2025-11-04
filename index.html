@@ -272,13 +272,12 @@
 
     // --- Загрузка из галереи ---
     document.getElementById('upload').onchange = e => {
-
-      console.log(123);
-
       const file = e.target.files[0];
       if (!file) return;
 
       const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+
       img.onload = () => {
         const ctxDraft = originalCanvas.getContext('2d');
 
@@ -308,9 +307,21 @@
         // --- обрабатываем изображение ---
         error_diffusion(previewCanvas, originalCanvas);
         error_diffusion(previewPrinterCanvas, originalCanvas, 40);
+
+        // Освобождаем URL объект
+        URL.revokeObjectURL(objectUrl);
+
+        // Сбрасываем значение input, чтобы можно было выбрать тот же файл снова
+        e.target.value = '';
       };
 
-      img.src = URL.createObjectURL(file);
+      img.onerror = () => {
+        // Освобождаем URL объект в случае ошибки
+        URL.revokeObjectURL(objectUrl);
+        e.target.value = '';
+      };
+
+      img.src = objectUrl;
 
       document.getElementById('photo').style.display = "none";
       document.getElementById('preview').style.display = "block";
@@ -637,7 +648,7 @@
       // console.log(base64mono);
       const xml = `<epos-print><image width="${width}" height="${height}" color="mono" mode="graphic">${base64mono}</image><cut type="feed"/></epos-print>`;
       const response = await fetch(
-        "https://192.168.10.170:8443/cgi-bin/epos/service.cgi?devid=local_printer",
+        "http://192.168.10.170:8080/cgi-bin/epos/service.cgi?devid=local_printer",
         {
           method: "POST",
           headers: {
